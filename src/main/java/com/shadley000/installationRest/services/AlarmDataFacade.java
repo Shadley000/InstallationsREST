@@ -36,7 +36,7 @@ public class AlarmDataFacade {
         try (Connection connection = SQLConnectionFactory.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql_getAlarmData);
             stmt.setInt(1, installationId);
-            stmt.setDate(2, new java.sql.Date(from.getTime()));
+            stmt.setTimestamp(2, new java.sql.Timestamp(from.getTime()));
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
