@@ -6,9 +6,7 @@
 package com.shadley000.installationRest;
 
 import com.shadley000.installationRest.beans.AlarmDataBean;
-import com.shadley000.installationRest.beans.AlarmFileBean;
 import com.shadley000.installationRest.beans.AlarmTypeBean;
-import com.shadley000.installationRest.beans.InstallationBean;
 import com.shadley000.installationRest.services.AlarmDataFacade;
 import com.shadley000.installationRest.services.AlarmFileFacade;
 import com.shadley000.installationRest.services.AlarmPivotFacade;
@@ -18,8 +16,6 @@ import com.shadley000.installationRest.services.SQLConnectionFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.BadRequestException;
@@ -31,6 +27,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -64,31 +61,45 @@ public class InstallationResource {
     }
 
     @GET
-    public Map<Integer, String> getIt() {
+    public Response getIt() {
         logger().log(Level.INFO, "InstallationResource.getIt()");
-        return installationFacade.getInstallations();
+        
+         return Response.ok(installationFacade.getInstallations(),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
+        //return installationFacade.getInstallations();
     }
 
     @GET
     @Path("/{id}")
-    public InstallationBean getById(@PathParam("id") int id) {
+    public Response  getById(@PathParam("id") int id) {
         logger().log(Level.INFO, "InstallationResource.getById(" + id + ")");
-        return installationFacade.getInstallation(id);
+        return  Response.ok(installationFacade.getInstallation(id),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
     }
 
     @GET
     @Path("/{id}/alarmTypes")
-    public Map<Integer, AlarmTypeBean> getAlarmTypes(@PathParam("id") int id) {
+    public Response  getAlarmTypes(@PathParam("id") int id) {
         logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + id + ")");
-        return alarmTypeFacade.getAlarmTypes(id);
+        return  Response.ok(alarmTypeFacade.getAlarmTypes(id),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
     }
 
     @GET
     @Path("/{id}/alarmTypes/{alarmid}")
-    public AlarmTypeBean getAlarmType(@PathParam("id") int id, @PathParam("alarmid") int alarmId) {
+    public Response  getAlarmType(@PathParam("id") int id, @PathParam("alarmid") int alarmId) {
         logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + id + ", " + alarmId + ")");
         AlarmTypeBean bean = alarmTypeFacade.getAlarmType(id, alarmId);
-        return bean;
+        return  Response.ok(bean,MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
     }
 
     protected Logger logger() {
@@ -97,7 +108,7 @@ public class InstallationResource {
 
     @GET
     @Path("/{id}/history")
-    public List<AlarmDataBean> getHistory(@PathParam("id") int id,
+    public Response  getHistory(@PathParam("id") int id,
             @QueryParam("from") String from,
             @DefaultValue("00:00:00") @QueryParam("time") String time) {
 
@@ -107,17 +118,21 @@ public class InstallationResource {
 
         } catch (ParseException ex) {
             logger().log(Level.WARNING, null, ex);
-            throw new BadRequestException("Bad date format. use:" + AlarmDataBean.DATE_FORMAT.toString());
+            //throw new BadRequestException("Bad date format. use:" + AlarmDataBean.DATE_FORMAT.toString());
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         logger().log(Level.INFO, "InstallationResource.getHistory(" + id + ", " + from + ", " + time + ")");
-        return alarmDataFacade.getHistory(id, fromDate);
+        return  Response.ok(alarmDataFacade.getHistory(id, fromDate),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
 
     }
 
     @GET
     @Path("/{id}/pivot")
-    public Map<Integer, int[]> getPivot(@PathParam("id") int id,
+    public Response  getPivot(@PathParam("id") int id,
             @QueryParam("from") String from,
             @QueryParam("to") String to) {
 
@@ -129,25 +144,35 @@ public class InstallationResource {
         } catch (ParseException ex) {
             logger().log(Level.WARNING, null, ex);
             // throw new BadRequestException("Bad date format. use:" + AlarmDataBean.DATE_FORMAT.toString());
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
         logger().log(Level.INFO, "InstallationResource.getPivot(" + id + ", " + from + ", " + to + ")");
-        return alarmPivotFacade.getPivot(id, fromDate, toDate);
+        return  Response.ok(alarmPivotFacade.getPivot(id, fromDate, toDate),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
     }
 
     @GET
     @Path("/{id}/files")
-    public Map<Integer, AlarmFileBean> getFiles(@PathParam("id") int id) {
+    public Response  getFiles(@PathParam("id") int id) {
         logger().log(Level.INFO, "InstallationResource.getFiles(" + id + ")");
-        return alarmFileFacade.getAlarmFiles(id);
+        return  Response.ok(alarmFileFacade.getAlarmFiles(id),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
     }
 
     @GET
     @Path("/{id}/files/{fileId}")
-    public AlarmFileBean getFile(@PathParam("id") int id, @PathParam("fileId") int fileId) {
+    public Response  getFile(@PathParam("id") int id, @PathParam("fileId") int fileId) {
 
         logger().log(Level.INFO, "InstallationResource.getFile(" + id + ", " + fileId + ")");
-        return alarmFileFacade.getAlarmFile(id, fileId);
+        return  Response.ok(alarmFileFacade.getAlarmFile(id, fileId),MediaType.APPLICATION_JSON)
+            .header("Access-Control-Allow-Origin", "*")
+            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+            .build();
     }
 
 }

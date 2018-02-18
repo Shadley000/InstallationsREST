@@ -28,6 +28,7 @@ public class SQLConnectionFactory {
     }
     public static Connection getConnection() throws SQLException {
 
-        return DriverManager.getConnection("jdbc:mysql://localhost:3306/a6alarms", "user", "0verl00k");
+        //return DriverManager.getConnection("jdbc:mysql://localhost:3306/a6alarms", "user", "0verl00k");
+        return DriverManager.getConnection("jdbc:mysql://a4alarms.ccbaz5k8ib32.us-east-2.rds.amazonaws.com:3306/a6alarms", "user", "0verl00k");
     }
 }

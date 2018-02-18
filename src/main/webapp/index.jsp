@@ -11,8 +11,7 @@
             <li><a href="webapi/installations/2/files">webapi/installations/2/files</a></li>
             <li><a href="webapi/installations/2/files/1">webapi/installations/2/files/1</a></li>
             <li></li>
-            <li><a href="webapi/test/2/echo?from=2018-01-01&to=2018-01-31">webapi/test/2/echo?from=2018-01-01&to=2018-01-31</a></li>
-            
+            <li><a href="webapi/test/2/echo?from=2018-01-01&to=2018-01-31">webapi/test/2/echo?from=2018-01-01&to=2018-01-31</a></li>            
         </UL>
     </body>
 </html>

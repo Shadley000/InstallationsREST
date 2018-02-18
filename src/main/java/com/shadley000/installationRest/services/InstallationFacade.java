@@ -82,8 +82,9 @@ public class InstallationFacade {
             
         } catch (SQLException ex) {
             Logger.getLogger(InstallationFacade.class.getName()).log(Level.SEVERE, null, ex);
+             throw new EntityNotFoundException("Unable to find Installation Id "+id +" because "+ex.getMessage());
         }
-        throw new EntityNotFoundException("Unable to find Installation Id "+id);
+       throw new EntityNotFoundException("Unable to find Installation Id "+id);
     }
 
 }
