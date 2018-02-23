@@ -5,7 +5,6 @@
  */
 package com.shadley000.installationRest;
 
-import com.shadley000.installationRest.beans.AlarmDataBean;
 import com.shadley000.installationRest.beans.AlarmTypeBean;
 import com.shadley000.installationRest.services.AlarmDataFacade;
 import com.shadley000.installationRest.services.AlarmFileFacade;
@@ -13,15 +12,18 @@ import com.shadley000.installationRest.services.AlarmPivotFacade;
 import com.shadley000.installationRest.services.AlarmTypeFacade;
 import com.shadley000.installationRest.services.InstallationFacade;
 import com.shadley000.installationRest.services.SQLConnectionFactory;
+import com.shadley000.userManagerClient.NoConnectionException;
+import com.shadley000.userManagerClient.NotFoundException;
+import com.shadley000.userManagerClient.TokenClient;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -45,7 +47,9 @@ public class InstallationResource {
     AlarmPivotFacade alarmPivotFacade;
     SimpleDateFormat pivotDateFormat;
     SimpleDateFormat historyDateFormat;
-
+    
+    TokenClient tokenClient;        
+        
     public InstallationResource() {
         installationFacade = new InstallationFacade();
         alarmDataFacade = new AlarmDataFacade();
@@ -57,11 +61,16 @@ public class InstallationResource {
         pivotDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         historyDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        tokenClient = new TokenClient(ConfigurationProperties.TOKENMANAGER_URL); 
         SQLConnectionFactory.init();
+    }
+    
+    protected long getUserID(long token) throws NoConnectionException, NotFoundException{        
+        return tokenClient.getUserId(token);       
     }
 
     @GET
-    public Response getIt() {
+    public Response getIt(@QueryParam("token") long token) {
         logger().log(Level.INFO, "InstallationResource.getIt()");
         
          return Response.ok(installationFacade.getInstallations(),MediaType.APPLICATION_JSON)
@@ -73,7 +82,8 @@ public class InstallationResource {
 
     @GET
     @Path("/{id}")
-    public Response  getById(@PathParam("id") int id) {
+    public Response  getById(@PathParam("id") int id, 
+                                @QueryParam("token") long token) {
         logger().log(Level.INFO, "InstallationResource.getById(" + id + ")");
         return  Response.ok(installationFacade.getInstallation(id),MediaType.APPLICATION_JSON)
             .header("Access-Control-Allow-Origin", "*")
@@ -83,7 +93,8 @@ public class InstallationResource {
 
     @GET
     @Path("/{id}/alarmTypes")
-    public Response  getAlarmTypes(@PathParam("id") int id) {
+    public Response  getAlarmTypes(@PathParam("id") int id, 
+                                @QueryParam("token") long token) {
         logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + id + ")");
         return  Response.ok(alarmTypeFacade.getAlarmTypes(id),MediaType.APPLICATION_JSON)
             .header("Access-Control-Allow-Origin", "*")
@@ -93,7 +104,8 @@ public class InstallationResource {
 
     @GET
     @Path("/{id}/alarmTypes/{alarmid}")
-    public Response  getAlarmType(@PathParam("id") int id, @PathParam("alarmid") int alarmId) {
+    public Response  getAlarmType(@PathParam("id") int id, @PathParam("alarmid") int alarmId, 
+                                @QueryParam("token") long token) {
         logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + id + ", " + alarmId + ")");
         AlarmTypeBean bean = alarmTypeFacade.getAlarmType(id, alarmId);
         return  Response.ok(bean,MediaType.APPLICATION_JSON)
@@ -110,7 +122,8 @@ public class InstallationResource {
     @Path("/{id}/history")
     public Response  getHistory(@PathParam("id") int id,
             @QueryParam("from") String from,
-            @DefaultValue("00:00:00") @QueryParam("time") String time) {
+            @DefaultValue("00:00:00") @QueryParam("time") String time, 
+                                @QueryParam("token") long token) {
 
         Date fromDate = null;
         try {
@@ -134,7 +147,8 @@ public class InstallationResource {
     @Path("/{id}/pivot")
     public Response  getPivot(@PathParam("id") int id,
             @QueryParam("from") String from,
-            @QueryParam("to") String to) {
+            @QueryParam("to") String to, 
+                                @QueryParam("token") long token) {
 
         Date fromDate = null;
         Date toDate = null;
@@ -156,7 +170,8 @@ public class InstallationResource {
 
     @GET
     @Path("/{id}/files")
-    public Response  getFiles(@PathParam("id") int id) {
+    public Response  getFiles(@PathParam("id") int id, 
+                                @QueryParam("token") long token) {
         logger().log(Level.INFO, "InstallationResource.getFiles(" + id + ")");
         return  Response.ok(alarmFileFacade.getAlarmFiles(id),MediaType.APPLICATION_JSON)
             .header("Access-Control-Allow-Origin", "*")
@@ -166,7 +181,8 @@ public class InstallationResource {
 
     @GET
     @Path("/{id}/files/{fileId}")
-    public Response  getFile(@PathParam("id") int id, @PathParam("fileId") int fileId) {
+    public Response  getFile(@PathParam("id") int id, @PathParam("fileId") int fileId, 
+                                @QueryParam("token") long token) {
 
         logger().log(Level.INFO, "InstallationResource.getFile(" + id + ", " + fileId + ")");
         return  Response.ok(alarmFileFacade.getAlarmFile(id, fileId),MediaType.APPLICATION_JSON)

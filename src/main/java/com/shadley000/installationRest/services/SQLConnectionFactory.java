@@ -5,6 +5,7 @@
  */
 package com.shadley000.installationRest.services;
 
+import com.shadley000.installationRest.ConfigurationProperties;
 import com.shadley000.installationRest.InstallationResource;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -21,14 +22,14 @@ public class SQLConnectionFactory {
      public static void init()
      {
          try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(ConfigurationProperties.DB_DRIVER);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(InstallationResource.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     public static Connection getConnection() throws SQLException {
 
-        //return DriverManager.getConnection("jdbc:mysql://localhost:3306/a6alarms", "user", "0verl00k");
-        return DriverManager.getConnection("jdbc:mysql://a4alarms.ccbaz5k8ib32.us-east-2.rds.amazonaws.com:3306/a6alarms", "user", "0verl00k");
+       
+        return DriverManager.getConnection(ConfigurationProperties.DB_URL, ConfigurationProperties.DB_USER, ConfigurationProperties.DB_PASSWORD);
     }
 }
