@@ -12,16 +12,23 @@ import com.shadley000.installationRest.services.AlarmPivotFacade;
 import com.shadley000.installationRest.services.AlarmTypeFacade;
 import com.shadley000.installationRest.services.InstallationFacade;
 import com.shadley000.installationRest.services.SQLConnectionFactory;
-import com.shadley000.userManagerClient.NoConnectionException;
-import com.shadley000.userManagerClient.NotFoundException;
-import com.shadley000.userManagerClient.TokenClient;
+import com.shadley000.installationRest.services.ContractorFacade;
+import com.shadley000.installationRest.services.OperatorFacade;
+import com.shadley000.installationRest.services.ShipFacade;
+import com.shadley000.userManagerClient.UsersManagerClient;
+import com.shadley000.userManagerClient.beans.Role;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 
 import javax.ws.rs.Path;
@@ -31,10 +38,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-/**
- *
- * @author shadl
- */
 @Path("installations")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -45,112 +48,151 @@ public class InstallationResource {
     AlarmTypeFacade alarmTypeFacade;
     AlarmFileFacade alarmFileFacade;
     AlarmPivotFacade alarmPivotFacade;
+    ShipFacade shipFacade;
+    ContractorFacade contractorFacade;
+    OperatorFacade operatorFacade;
+
     SimpleDateFormat pivotDateFormat;
     SimpleDateFormat historyDateFormat;
-    
-    TokenClient tokenClient;        
-        
+
+    UsersManagerClient usersManagerClient;
+
     public InstallationResource() {
         installationFacade = new InstallationFacade();
         alarmDataFacade = new AlarmDataFacade();
         alarmTypeFacade = new AlarmTypeFacade();
         alarmFileFacade = new AlarmFileFacade();
         alarmPivotFacade = new AlarmPivotFacade();
+        shipFacade = new ShipFacade();
+        contractorFacade = new ContractorFacade();
+        operatorFacade = new OperatorFacade();
 
-        //dateFormat = new SimpleDateFormat("MM/dd/yyyy");
         pivotDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        historyDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        tokenClient = new TokenClient(ConfigurationProperties.TOKENMANAGER_URL); 
+        historyDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");        
+        usersManagerClient = new UsersManagerClient(ConfigurationProperties.USERMANAGER_URL,  ConfigurationProperties.USERMANAGER_USER, ConfigurationProperties.USERMANAGER_PASSWORD);
         SQLConnectionFactory.init();
     }
-    
-    protected long getUserID(long token) throws NoConnectionException, NotFoundException{        
-        return tokenClient.getUserId(token);       
+
+    protected Response okResponse(Object obj) {
+        return Response.ok(obj, MediaType.APPLICATION_JSON)
+                .header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+                .build();
     }
 
-    @GET
-    public Response getIt(@QueryParam("token") long token) {
-        logger().log(Level.INFO, "InstallationResource.getIt()");
-        
-         return Response.ok(installationFacade.getInstallations(),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
-        //return installationFacade.getInstallations();
-    }
-
-    @GET
-    @Path("/{id}")
-    public Response  getById(@PathParam("id") int id, 
-                                @QueryParam("token") long token) {
-        logger().log(Level.INFO, "InstallationResource.getById(" + id + ")");
-        return  Response.ok(installationFacade.getInstallation(id),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
-    }
-
-    @GET
-    @Path("/{id}/alarmTypes")
-    public Response  getAlarmTypes(@PathParam("id") int id, 
-                                @QueryParam("token") long token) {
-        logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + id + ")");
-        return  Response.ok(alarmTypeFacade.getAlarmTypes(id),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
-    }
-
-    @GET
-    @Path("/{id}/alarmTypes/{alarmid}")
-    public Response  getAlarmType(@PathParam("id") int id, @PathParam("alarmid") int alarmId, 
-                                @QueryParam("token") long token) {
-        logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + id + ", " + alarmId + ")");
-        AlarmTypeBean bean = alarmTypeFacade.getAlarmType(id, alarmId);
-        return  Response.ok(bean,MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
+    protected Response noContentResponse() {
+        return Response.noContent().header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
+                .build();
     }
 
     protected Logger logger() {
         return Logger.getLogger(InstallationResource.class.getName());
     }
 
+    protected void securityCheck(String tokenStr,String installationId) throws ForbiddenException, IOException {
+        Set<String> installationSet = securityCheck( tokenStr);
+        if(!installationSet.contains(installationId)) throw new ForbiddenException();
+    }
+    
+    protected Set<String> securityCheck(String tokenStr) throws ForbiddenException, IOException {
+        String userId = usersManagerClient.getUserId(tokenStr);
+        List<Role> roleList = usersManagerClient.getRolesByUser(userId);
+        if (roleList.isEmpty()) {
+            throw new ForbiddenException();
+        }
+         Set<String> installationIdSet = new HashSet<>();
+        for (Role role : roleList) {
+            if (role.getUd1() != null) {
+                if (null != role.getUd1()) switch (role.getUd1()) {
+                    case "Ship":
+                        installationIdSet.addAll(shipFacade.getInstallationsByShipName(role.getName()));
+                        break;
+                    case "Contractor":
+                        installationIdSet.addAll(contractorFacade.getInstallationsByContractorName(role.getName()));
+                        break;
+                    case "Operator":
+                        installationIdSet.addAll( operatorFacade.getInstallationsByOperatorName(role.getName()));
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if (installationIdSet.isEmpty()) throw new ForbiddenException();
+        else return installationIdSet;
+    }
+
     @GET
-    @Path("/{id}/history")
-    public Response  getHistory(@PathParam("id") int id,
+    @Path("/health")
+    public Response getHealth() {
+        logger().log(Level.INFO, "getHealth ");
+        return Response.ok("good").build();
+    }
+
+    @GET
+    public Response getIt(@QueryParam("token") String tokenStr)  throws ForbiddenException, IOException {
+        logger().log(Level.INFO, "InstallationResource.getIt()");
+        Set<String> enabledInstallationsSet = securityCheck( tokenStr);
+        return okResponse(installationFacade.getInstallations(enabledInstallationsSet));
+    }
+
+    @GET
+    @Path("/{installationId}")
+    public Response getById(@PathParam("installationId") String installationId,
+            @QueryParam("token") String tokenStr) throws ForbiddenException, IOException {
+        logger().log(Level.INFO, "InstallationResource.getById(" + installationId + ")");
+        securityCheck( tokenStr, installationId);
+        return okResponse(installationFacade.getInstallation(installationId));
+    }
+
+    @GET
+    @Path("/{installationId}/alarmTypes")
+    public Response getAlarmTypes(@PathParam("installationId") String installationId,
+            @QueryParam("token") String tokenStr) throws ForbiddenException , IOException {
+        logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + installationId + ")");
+        securityCheck( tokenStr, installationId);
+        return okResponse(alarmTypeFacade.getAlarmTypes(installationId));
+    }
+
+    @GET
+    @Path("/{installationId}/alarmTypes/{alarmid}")
+    public Response getAlarmType(@PathParam("installationId") String installationId, @PathParam("alarmid") String alarmId,
+            @QueryParam("token") String tokenStr)  throws ForbiddenException, IOException {
+        logger().log(Level.INFO, "InstallationResource.getAlarmTypes(" + installationId + ", " + alarmId + ")");
+         securityCheck( tokenStr, installationId);
+       AlarmTypeBean bean = alarmTypeFacade.getAlarmType(installationId, alarmId);
+        return okResponse(bean);
+    }
+
+    @GET
+    @Path("/{installationId}/history")
+    public Response getHistory(@PathParam("installationId") String installationId,
             @QueryParam("from") String from,
-            @DefaultValue("00:00:00") @QueryParam("time") String time, 
-                                @QueryParam("token") long token) {
-
-        Date fromDate = null;
+            @DefaultValue("00:00:00") @QueryParam("time") String time,
+            @QueryParam("token") String tokenStr)  throws ForbiddenException, IOException {
+         securityCheck( tokenStr, installationId);
+       Date fromDate = null;
         try {
-            fromDate = historyDateFormat.parse(from+" "+time);
-
+            fromDate = historyDateFormat.parse(from + " " + time);
         } catch (ParseException ex) {
             logger().log(Level.WARNING, null, ex);
             //throw new BadRequestException("Bad date format. use:" + AlarmDataBean.DATE_FORMAT.toString());
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-
-        logger().log(Level.INFO, "InstallationResource.getHistory(" + id + ", " + from + ", " + time + ")");
-        return  Response.ok(alarmDataFacade.getHistory(id, fromDate),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
-
+        logger().log(Level.INFO, "InstallationResource.getHistory(" + installationId + ", " + from + ", " + time + ")");
+        return okResponse(alarmDataFacade.getHistory(installationId, fromDate));
     }
 
     @GET
-    @Path("/{id}/pivot")
-    public Response  getPivot(@PathParam("id") int id,
+    @Path("/{installationId}/pivot")
+    public Response getPivot(@PathParam("installationId") String installationId,
             @QueryParam("from") String from,
-            @QueryParam("to") String to, 
-                                @QueryParam("token") long token) {
+            @QueryParam("to") String to,
+            @QueryParam("token") String tokenStr)   throws ForbiddenException, IOException{
 
-        Date fromDate = null;
+         securityCheck( tokenStr, installationId);
+       Date fromDate = null;
         Date toDate = null;
         try {
             fromDate = pivotDateFormat.parse(from);
@@ -161,34 +203,27 @@ public class InstallationResource {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
-        logger().log(Level.INFO, "InstallationResource.getPivot(" + id + ", " + from + ", " + to + ")");
-        return  Response.ok(alarmPivotFacade.getPivot(id, fromDate, toDate),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
+        logger().log(Level.INFO, "InstallationResource.getPivot(" + installationId + ", " + from + ", " + to + ")");
+        return okResponse(alarmPivotFacade.getPivot(installationId, fromDate, toDate));
     }
 
     @GET
-    @Path("/{id}/files")
-    public Response  getFiles(@PathParam("id") int id, 
-                                @QueryParam("token") long token) {
-        logger().log(Level.INFO, "InstallationResource.getFiles(" + id + ")");
-        return  Response.ok(alarmFileFacade.getAlarmFiles(id),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
+    @Path("/{installationId}/files")
+    public Response getFiles(@PathParam("installationId") String installationId,
+            @QueryParam("token") String tokenStr)   throws ForbiddenException, IOException{
+         securityCheck( tokenStr, installationId);
+       logger().log(Level.INFO, "InstallationResource.getFiles(" + installationId + ")");
+        return okResponse(alarmFileFacade.getAlarmFiles(installationId));
     }
 
     @GET
-    @Path("/{id}/files/{fileId}")
-    public Response  getFile(@PathParam("id") int id, @PathParam("fileId") int fileId, 
-                                @QueryParam("token") long token) {
-
-        logger().log(Level.INFO, "InstallationResource.getFile(" + id + ", " + fileId + ")");
-        return  Response.ok(alarmFileFacade.getAlarmFile(id, fileId),MediaType.APPLICATION_JSON)
-            .header("Access-Control-Allow-Origin", "*")
-            .header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS, HEAD")
-            .build();
+    @Path("/{installationId}/files/{fileId}")
+    public Response getFile(@PathParam("installationId") String installationId, @PathParam("fileId") String fileId,
+            @QueryParam("token") String tokenStr)   throws ForbiddenException, IOException{
+ securityCheck( tokenStr, installationId);
+       
+        logger().log(Level.INFO, "InstallationResource.getFile(" + installationId + ", " + fileId + ")");
+        return okResponse(alarmFileFacade.getAlarmFile(installationId, fileId));
     }
 
 }

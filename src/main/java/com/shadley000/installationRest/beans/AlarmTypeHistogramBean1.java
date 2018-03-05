@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class AlarmTypeHistogramBean1 implements Serializable {
    
-    int alarmTypeId;
+    String alarmTypeId;
     Map<String, Integer> histogram;
 
     public AlarmTypeHistogramBean1() {
@@ -44,11 +44,11 @@ public class AlarmTypeHistogramBean1 implements Serializable {
         }
     }
 
-    public int getAlarmTypeId() {
+    public String getAlarmTypeId() {
         return alarmTypeId;
     }
 
-    public void setAlarmTypeId(int alarmTypeId) {
+    public void setAlarmTypeId(String alarmTypeId) {
         this.alarmTypeId = alarmTypeId;
     }
 

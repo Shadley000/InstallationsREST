@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author shadl
  */
 public class VendorBean  implements Serializable {
-    private int id;
+    private String id;
     private String nname;
     private String logo;
 
@@ -24,11 +24,11 @@ public class VendorBean  implements Serializable {
         this.logo = logo;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

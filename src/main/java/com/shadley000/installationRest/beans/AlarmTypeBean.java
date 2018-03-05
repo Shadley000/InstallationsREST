@@ -12,8 +12,8 @@ import java.io.Serializable;
  * @author shadl
  */
 public class AlarmTypeBean  implements Serializable  {
-    private int id;
-    private int idInstallation;
+    private String id;
+    private String idInstallation;
     private String system;
     private String subSystem;
     private String messageType;
@@ -24,7 +24,7 @@ public class AlarmTypeBean  implements Serializable  {
     public AlarmTypeBean() {
     }
 
-    public AlarmTypeBean(int id, int idInstallation, String system, String subSystem, String messageType, String alarmPriority, String tagName, String description) {
+    public AlarmTypeBean(String id, String idInstallation, String system, String subSystem, String messageType, String alarmPriority, String tagName, String description) {
         this.id = id;
         this.idInstallation = idInstallation;
         this.system = system;
@@ -35,19 +35,19 @@ public class AlarmTypeBean  implements Serializable  {
         this.description = description;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getIdInstallation() {
+    public String getIdInstallation() {
         return idInstallation;
     }
 
-    public void setIdInstallation(int idInstallation) {
+    public void setIdInstallation(String idInstallation) {
         this.idInstallation = idInstallation;
     }
 

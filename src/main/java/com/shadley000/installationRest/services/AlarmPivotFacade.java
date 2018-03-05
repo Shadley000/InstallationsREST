@@ -27,7 +27,7 @@ public class AlarmPivotFacade {
     private static String SQL_GET_ALARM_PIVOT = "SELECT ID_INSTALLATION, ID_ALARM_TYPE, ALARM_COUNT, ALARM_DATE "
             + " FROM ALARM_PIVOT WHERE ID_INSTALLATION = ? AND ALARM_DATE >= ? AND ALARM_DATE < ? AND ALARM_COUNT >0";
 
-    public Map<Integer, int[]> getPivot(int installationId, Date fromDate, Date toDate) {
+    public Map<Integer, int[]> getPivot(String installationId, Date fromDate, Date toDate) {
 
         Map<Integer, int[]> map = new HashMap<>();
 
@@ -35,7 +35,7 @@ public class AlarmPivotFacade {
 
         try (Connection connection = SQLConnectionFactory.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALARM_PIVOT);
-            stmt.setInt(1, installationId);
+            stmt.setString(1, installationId);
             stmt.setString(2, DATE_FORMAT.format(fromDate));
             stmt.setString(3, DATE_FORMAT.format(toDate));
             ResultSet rs = stmt.executeQuery();

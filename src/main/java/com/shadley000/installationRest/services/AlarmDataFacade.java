@@ -28,22 +28,22 @@ public class AlarmDataFacade {
     private static String sql_getAlarmData = "select ID, ID_ALARM_FILE, ID_ALARM_TYPE, ALARM_STATUS, ALARM_TIME "
             + "from ALARM_DATA where ID_INSTALLATION = ? and ALARM_TIME >= ? ORDER BY ALARM_TIME ASC LIMIT 100";
 
-    public List<AlarmDataBean> getHistory(int installationId, Date from) {
+    public List<AlarmDataBean> getHistory(String installationId, Date from) {
 
         List<AlarmDataBean> list = new ArrayList<>();
 
         Logger.getLogger(InstallationResource.class.getName()).log(Level.INFO, installationId + " " + from.toString());
         try (Connection connection = SQLConnectionFactory.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql_getAlarmData);
-            stmt.setInt(1, installationId);
+            stmt.setString(1, installationId);
             stmt.setTimestamp(2, new java.sql.Timestamp(from.getTime()));
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 AlarmDataBean alarmDataBean = new AlarmDataBean();
-                alarmDataBean.setId(rs.getInt("ID"));
-                alarmDataBean.setIdAlarmFile(rs.getInt("ID_ALARM_FILE"));
-                alarmDataBean.setIdAlarmType(rs.getInt("ID_ALARM_TYPE"));
+                alarmDataBean.setId(rs.getString("ID"));
+                alarmDataBean.setIdAlarmFile(rs.getString("ID_ALARM_FILE"));
+                alarmDataBean.setIdAlarmType(rs.getString("ID_ALARM_TYPE"));
                 alarmDataBean.setAlarmStatus(rs.getString("ALARM_STATUS"));
                 alarmDataBean.setAlarmTime(AlarmDataBean.DATE_FORMAT.format(rs.getTimestamp("ALARM_TIME")));
                 list.add(alarmDataBean);

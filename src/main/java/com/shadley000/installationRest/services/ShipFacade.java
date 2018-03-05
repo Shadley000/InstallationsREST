@@ -11,7 +11,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityNotFoundException;
@@ -24,20 +26,19 @@ public class ShipFacade {
 
     private static String SQL_GET_SHIP = "SELECT ID, NNAME, LOGO FROM SHIP WHERE ID = ? ";
     private static String SQL_GET_SHIPS = "SELECT ID, NNAME, LOGO FROM SHIP ORDER BY NNAME ";
+    
+     private static String SQL_GET_INSTALLATIONS = "select i.ID from SHIP s, INSTALLATION i where s.ID = i.ID_SHIP and s.NNAME = ? ";
 
-    public ShipBean getShip(int id) {
-        if (id < 0) {
-            return null;
-        }
-
+    public ShipBean getShip(String id) {
+       
         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_SHIP);
-            stmt.setInt(1, id);
+            stmt.setString(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 ShipBean ship = new ShipBean();
-                ship.setId(rs.getInt("ID"));
+                ship.setId(rs.getString("ID"));
                 ship.setNname(rs.getString("NNAME"));
                 ship.setLogo(rs.getString("LOGO"));
                 return ship;
@@ -49,8 +50,8 @@ public class ShipFacade {
     }
      
 
-    public Map<Integer, ShipBean> getShips() {
-        Map<Integer, ShipBean> map = new HashMap<>();
+    public Map<String, ShipBean> getShips() {
+        Map<String, ShipBean> map = new HashMap<>();
 
         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
@@ -58,7 +59,7 @@ public class ShipFacade {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ShipBean ship = new ShipBean();
-                ship.setId(rs.getInt("ID"));
+                ship.setId(rs.getString("ID"));
                 ship.setNname(rs.getString("NNAME"));
                 ship.setLogo(rs.getString("LOGO"));
                 map.put(ship.getId(), ship);
@@ -67,5 +68,21 @@ public class ShipFacade {
             Logger.getLogger(ShipFacade.class.getName()).log(Level.SEVERE, null, ex);
         }
         return map;
+    }
+
+    public Set<String> getInstallationsByShipName(String name) {
+        Set<String> installationIdSet = new HashSet<String>();
+         try (Connection connection = SQLConnectionFactory.getConnection()) {
+
+            PreparedStatement stmt = connection.prepareStatement(SQL_GET_INSTALLATIONS);
+            stmt.setString(1, name);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                installationIdSet.add(rs.getString("ID"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ShipFacade.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return installationIdSet;
     }
 }

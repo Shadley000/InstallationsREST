@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityNotFoundException;
@@ -38,14 +39,19 @@ public class InstallationFacade {
         contractorFacade = new ContractorFacade();
     }
 
-    public Map<Integer,String> getInstallations() {
-        Map<Integer,String> map = new HashMap<>();
+    public Map<String, String> getInstallations(Set<String> filter) {
+
+        Map<String, String> map = new HashMap<>();
 
         try (Connection connection = SQLConnectionFactory.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_INSTALLATIONS);
             ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {                
-                map.put(rs.getInt("ID"), rs.getString("NNAME"));
+            while (rs.next()) {
+                String installationId = rs.getString("ID");
+                String name = rs.getString("NNAME");
+                if (filter.contains(installationId)) {
+                    map.put(installationId, name);
+                }
             }
         } catch (SQLException ex) {
             Logger.getLogger(InstallationFacade.class.getName()).log(Level.SEVERE, null, ex);
@@ -53,24 +59,24 @@ public class InstallationFacade {
         return map;
     }
 
-    public InstallationBean getInstallation(int id) {
+    public InstallationBean getInstallation(String id) {
 
         InstallationBean installation = null;
         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_INSTALLATION);
-            stmt.setInt(1,id);
+            stmt.setString(1, id);
             ResultSet rs = stmt.executeQuery();
-            int vendorId = -1;
-            int contractorId = -1;
-            int shipId = -1;
-            if(rs.next()) {
+            String vendorId = null;
+            String contractorId = null;
+            String shipId = null;
+            if (rs.next()) {
 
                 installation = new InstallationBean();
                 installation.setId(id);
-                vendorId = rs.getInt("ID_VENDOR");
-                contractorId = rs.getInt("ID_CONTRACTOR");
-                shipId = rs.getInt("ID_SHIP");
+                vendorId = rs.getString("ID_VENDOR");
+                contractorId = rs.getString("ID_CONTRACTOR");
+                shipId = rs.getString("ID_SHIP");
             }
             if (installation != null) {
 
@@ -79,12 +85,12 @@ public class InstallationFacade {
                 installation.setShip(shipFacade.getShip(shipId));
                 return installation;
             }
-            
+
         } catch (SQLException ex) {
             Logger.getLogger(InstallationFacade.class.getName()).log(Level.SEVERE, null, ex);
-             throw new EntityNotFoundException("Unable to find Installation Id "+id +" because "+ex.getMessage());
+            throw new EntityNotFoundException("Unable to find Installation Id " + id + " because " + ex.getMessage());
         }
-       throw new EntityNotFoundException("Unable to find Installation Id "+id);
+        throw new EntityNotFoundException("Unable to find Installation Id " + id);
     }
 
 }

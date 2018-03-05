@@ -15,5 +15,7 @@ public interface ConfigurationProperties {
     public final static String DB_URL = "jdbc:mysql://a4alarms.ccbaz5k8ib32.us-east-2.rds.amazonaws.com:3306/a6alarms";
     public final static String DB_USER = "user"; 
     public final static String DB_PASSWORD = "0verl00k";
-    public final static String TOKENMANAGER_URL = "";
+    public final static String USERMANAGER_URL = "";
+    public final static String USERMANAGER_USER = "Installation";
+    public final static String USERMANAGER_PASSWORD = "asdk134jhalj7542";
 }

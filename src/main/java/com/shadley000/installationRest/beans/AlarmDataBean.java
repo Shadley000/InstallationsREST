@@ -17,17 +17,17 @@ import java.util.Date;
 public class AlarmDataBean  implements Serializable {
     public static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     
-    private int id;
-    private int idInstallation;
-    private int idAlarmFile;
-    private int idAlarmType;
+    private String id;
+    private String idInstallation;
+    private String idAlarmFile;
+    private String idAlarmType;
     private String alarmStatus;
     private String alarmTime;
 
     public AlarmDataBean() {
     }
 
-    public AlarmDataBean(int id, int idInstallation, int idAlarmFile, int idAlarmType, String alarmStatus, Date alarmTime) {
+    public AlarmDataBean(String id, String idInstallation, String idAlarmFile, String idAlarmType, String alarmStatus, Date alarmTime) {
         this.id = id;
         this.idInstallation = idInstallation;
         this.idAlarmFile = idAlarmFile;
@@ -36,35 +36,35 @@ public class AlarmDataBean  implements Serializable {
         this.alarmTime = DATE_FORMAT.format(alarmTime);
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getIdInstallation() {
+    public String getIdInstallation() {
         return idInstallation;
     }
 
-    public void setIdInstallation(int idInstallation) {
+    public void setIdInstallation(String idInstallation) {
         this.idInstallation = idInstallation;
     }
 
-    public int getIdAlarmFile() {
+    public String getIdAlarmFile() {
         return idAlarmFile;
     }
 
-    public void setIdAlarmFile(int idAlarmFile) {
+    public void setIdAlarmFile(String idAlarmFile) {
         this.idAlarmFile = idAlarmFile;
     }
 
-    public int getIdAlarmType() {
+    public String getIdAlarmType() {
         return idAlarmType;
     }
 
-    public void setIdAlarmType(int idAlarmType) {
+    public void setIdAlarmType(String idAlarmType) {
         this.idAlarmType = idAlarmType;
     }
 

@@ -25,19 +25,15 @@ public class VendorFacade {
     private static String SQL_GET_VENDOR = "SELECT ID, NNAME, LOGO FROM VENDOR WHERE ID = ? ";
     private static String SQL_GET_VENDORS = "SELECT ID, NNAME, LOGO FROM VENDOR ORDER BY NNAME ";
 
-    public VendorBean getVendor(int id) {
-        if (id < 0) {
-            return null;
-        }
-
-        try (Connection connection = SQLConnectionFactory.getConnection()) {
+    public VendorBean getVendor(String id) {
+         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_VENDOR);
-            stmt.setInt(1, id);
+            stmt.setString(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 VendorBean vendor = new VendorBean();
-                vendor.setId(rs.getInt("ID"));
+                vendor.setId(rs.getString("ID"));
                 vendor.setNname(rs.getString("NNAME"));
                 vendor.setLogo(rs.getString("LOGO"));
                 return vendor;
@@ -48,8 +44,8 @@ public class VendorFacade {
         throw new EntityNotFoundException("Unable to find Vendor Id "+id);
     }
 
-    public Map<Integer, VendorBean> getVendors() {
-        Map<Integer, VendorBean> map = new HashMap<>();
+    public Map<String, VendorBean> getVendors() {
+        Map<String, VendorBean> map = new HashMap<>();
 
         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
@@ -57,7 +53,7 @@ public class VendorFacade {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 VendorBean vendor = new VendorBean();
-                vendor.setId(rs.getInt("ID"));
+                vendor.setId(rs.getString("ID"));
                 vendor.setNname(rs.getString("NNAME"));
                 vendor.setLogo(rs.getString("LOGO"));
                 map.put(vendor.getId(), vendor);

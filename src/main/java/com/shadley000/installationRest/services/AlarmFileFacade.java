@@ -30,18 +30,18 @@ public class AlarmFileFacade {
     private static String sql_getAlarmFile = "select ID, FILE_NAME,LOAD_DATE,LINES_COUNT, INSERTED_COUNT, SKIPPED_COUNT, ERROR_COUNT "
             + " from ALARM_FILE where ID_INSTALLATION = ? and ID = ?";
 
-    public Map<Integer, AlarmFileBean> getAlarmFiles(int id) {
+    public Map<String, AlarmFileBean> getAlarmFiles(String id) {
 
-        Map<Integer, AlarmFileBean> map = new HashMap<>();
+        Map<String, AlarmFileBean> map = new HashMap<>();
 
         try (Connection connection = SQLConnectionFactory.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql_getAlarmFiles);
-            stmt.setInt(1, id);
+            stmt.setString(1, id);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 AlarmFileBean alarmFile = new AlarmFileBean();
-                alarmFile.setId(rs.getInt("ID"));
+                alarmFile.setId(rs.getString("ID"));
                 alarmFile.setFileName(rs.getString("FILE_NAME"));
                 alarmFile.setLoadDate(rs.getDate("LOAD_DATE"));
                 alarmFile.setLinesCount(rs.getInt("LINES_COUNT"));
@@ -58,18 +58,18 @@ public class AlarmFileFacade {
         return map;
     }
 
-    public AlarmFileBean getAlarmFile(int id, int fileId) {
+    public AlarmFileBean getAlarmFile(String id, String fileId) {
         AlarmFileBean alarmFile = null;
 
         try (Connection connection = SQLConnectionFactory.getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql_getAlarmFile);
-            stmt.setInt(1, id);
-            stmt.setInt(2, fileId);
+            stmt.setString(1, id);
+            stmt.setString(2, fileId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 alarmFile = new AlarmFileBean();
-                alarmFile.setId(rs.getInt("ID"));
+                alarmFile.setId(rs.getString("ID"));
                 alarmFile.setFileName(rs.getString("FILE_NAME"));
                 alarmFile.setLoadDate(rs.getDate("LOAD_DATE"));
                 alarmFile.setLinesCount(rs.getInt("LINES_COUNT"));

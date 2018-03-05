@@ -29,18 +29,18 @@ public class AlarmTypeFacade {
     private static String SQL_GET_ALARM_TYPE = "SELECT ID, ID_INSTALLATION, SYSTEM, SUBSYSTEM, MESSAGE_TYPE, ALARM_PRIORITY, TAG_NAME, DESCRIPTION "
             + " FROM ALARM_TYPE  WHERE ID_INSTALLATION = ? AND ID = ? ";
 
-    public Map<Integer, AlarmTypeBean> getAlarmTypes(int installationId) {
+    public Map<String, AlarmTypeBean> getAlarmTypes(String installationId) {
 
-        Map<Integer, AlarmTypeBean> map = new HashMap<>();
+        Map<String, AlarmTypeBean> map = new HashMap<>();
         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALARM_TYPES);
-            stmt.setInt(1, installationId);
+            stmt.setString(1, installationId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 AlarmTypeBean alarmTypeBean = new AlarmTypeBean();
-                alarmTypeBean.setId(rs.getInt("ID"));
+                alarmTypeBean.setId(rs.getString("ID"));
                 alarmTypeBean.setIdInstallation(installationId);
                 alarmTypeBean.setSystem(rs.getString("SYSTEM"));
                 alarmTypeBean.setSubSystem(rs.getString("SUBSYSTEM"));
@@ -58,19 +58,19 @@ public class AlarmTypeFacade {
         return map;
     }
 
-    public AlarmTypeBean getAlarmType(int installationId, int alarmTypeId) {
+    public AlarmTypeBean getAlarmType(String installationId, String alarmTypeId) {
 
         AlarmTypeBean alarmTypeBean = null;
         try (Connection connection = SQLConnectionFactory.getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(SQL_GET_ALARM_TYPE);
-            stmt.setInt(1, installationId);
-            stmt.setInt(2, alarmTypeId);
+            stmt.setString(1, installationId);
+            stmt.setString(2, alarmTypeId);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 alarmTypeBean = new AlarmTypeBean();
-                alarmTypeBean.setId(rs.getInt("ID"));
+                alarmTypeBean.setId(rs.getString("ID"));
                 alarmTypeBean.setIdInstallation(installationId);
                 alarmTypeBean.setSystem(rs.getString("SYSTEM"));
                 alarmTypeBean.setSubSystem(rs.getString("SUBSYSTEM"));

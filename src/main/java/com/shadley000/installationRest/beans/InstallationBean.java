@@ -13,7 +13,7 @@ import java.io.Serializable;
  */
 public class InstallationBean  implements Serializable {
     
-    private int id;
+    private String id;
     private String parserName;
     private String nname;
     private String dataDirectory;
@@ -31,11 +31,11 @@ public class InstallationBean  implements Serializable {
         this.contractor = contractor;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

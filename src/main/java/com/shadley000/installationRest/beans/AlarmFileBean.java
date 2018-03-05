@@ -16,8 +16,8 @@ import java.util.Date;
 public class AlarmFileBean {
     private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss a");
     
-    int id;
-    int installationId;
+    String id;
+    String installationId;
     String fileName;
     String loadDate;
     int linesCount;
@@ -28,7 +28,7 @@ public class AlarmFileBean {
     public AlarmFileBean() {
     }
 
-    public AlarmFileBean(int id, int installationId, String fileName, Date loadDate, int linesCount, int insertedCount, int skippedCount, int errorCount) {
+    public AlarmFileBean(String id, String installationId, String fileName, Date loadDate, int linesCount, int insertedCount, int skippedCount, int errorCount) {
         this.id = id;
         this.installationId = installationId;
         this.fileName = fileName;
@@ -39,19 +39,19 @@ public class AlarmFileBean {
         this.errorCount = errorCount;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getInstallationId() {
+    public String getInstallationId() {
         return installationId;
     }
 
-    public void setInstallationId(int installationId) {
+    public void setInstallationId(String installationId) {
         this.installationId = installationId;
     }
 
